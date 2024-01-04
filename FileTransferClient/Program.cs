@@ -17,23 +17,32 @@ namespace FileTransferClient
 
                 // 連接到伺服器
                 Console.WriteLine("Connected to server.");
-
-                // 發送檔案
-                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ProductionLog.dll");// @"C:\path\to\your\file.ext";
-                string fileName = Path.GetFileName(filePath);
-                byte[] fileNameBytes = System.Text.Encoding.UTF8.GetBytes(fileName);
-                byte[] fileNameLen = BitConverter.GetBytes(fileNameBytes.Length);
-
                 NetworkStream stream = client.GetStream();
-                stream.Write(fileNameLen, 0, 4);
-                stream.Write(fileNameBytes, 0, fileNameBytes.Length);
 
-                // 發送檔案數據
-                byte[] fileData = File.ReadAllBytes(filePath);
-                byte[] fileDataLen = BitConverter.GetBytes(fileData.Length);
-                Console.WriteLine(fileData.Length);
-                stream.Write(fileDataLen, 0, 4);
-                stream.Write(fileData, 0, fileData.Length);
+                string[] files = { "ProductionLog.dll", "temp.txt", "恭喜阿公溪發壓發大財.txt", "MapleStoryV234.zip" };
+
+                foreach (var file in files)
+                {
+                    // 發送檔案
+                    string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, file);// @"C:\path\to\your\file.ext";
+                    string fileName = Path.GetFileName(filePath);
+                    byte[] fileNameBytes = System.Text.Encoding.UTF8.GetBytes(fileName);
+                    byte[] fileNameLen = BitConverter.GetBytes(fileNameBytes.Length);
+
+                    stream.Write(fileNameLen, 0, 4);
+                    stream.Write(fileNameBytes, 0, fileNameBytes.Length);
+
+                    // 發送檔案數據
+                    byte[] fileData = File.ReadAllBytes(filePath);
+                    byte[] fileDataLen = BitConverter.GetBytes(fileData.Length);
+                    Console.WriteLine(fileData.Length);
+                    stream.Write(fileDataLen, 0, 4);
+                    stream.Write(fileData, 0, fileData.Length);
+                }
+
+                // 傳送完成標誌
+                byte[] endSignal = BitConverter.GetBytes(-1);
+                stream.Write(endSignal, 0, 4);
 
                 // 關閉連線
                 stream.Close();
